@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<forms:MvvmNanoTabbedPage x:TypeArguments="viewModel:MainTabbedViewModel" xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="WorkTimer.Page.MainTabbedPage" 
+    xmlns:forms="clr-namespace:MvvmNano.Forms;assembly=MvvmNano.Forms"
+    xmlns:viewModel="clr-namespace:WorkTimer.ViewModel;assembly=WorkTimer" 
+    xmlns:page="clr-namespace:WorkTimer.Page;assembly=WorkTimer"
+    Title="Test"> 
+  <page:MainPage/> 
+  <page:HistoryPage/>
+</forms:MvvmNanoTabbedPage>
