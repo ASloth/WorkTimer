@@ -1,8 +1,13 @@
-﻿using MvvmNano;
+﻿using System;
+using System.Threading.Tasks;
+using MvvmNano;
 using MvvmNano.Forms;
 using MvvmNano.Ninject;
+using WorkTimer.Implementation;
+using WorkTimer.Interface;
 using WorkTimer.Page;
 using WorkTimer.ViewModel;
+using Xamarin.Forms;
 
 namespace WorkTimer
 {
@@ -10,7 +15,9 @@ namespace WorkTimer
     {
         public App()
         {
-            InitializeComponent();   
+            InitializeComponent();
+
+            MainPage = new ContentPage {Title = "Test"};
         }
 
         public MvvmNanoTabbedPage<TViewModel> GetTabbedPageFor<TViewModel>() where TViewModel : MvvmNanoViewModel
@@ -35,8 +42,23 @@ namespace WorkTimer
         protected override void OnStart()
         {
             base.OnStart();
-             
+
+            SetUpDependencies();
+
             MainPage = new MvvmNanoNavigationPage(GetTabbedPageFor<MainTabbedViewModel>());
+
+            //Task.Run(async () => await Setup());
+        }
+
+        private static void SetUpDependencies()
+        {
+            MvvmNanoIoC.Register<IDataService, DataService>();
+            MvvmNanoIoC.Register<IWorkManager, WorkManager>(); 
+        }
+
+        private async Task Setup()
+        {
+            //await MvvmNanoIoC.Resolve<IDataService>().Initialize(); 
         }
 
         protected override void OnSleep()

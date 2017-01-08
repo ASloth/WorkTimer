@@ -3,6 +3,8 @@
     "Microsoft.NETCore.UniversalWindowsPlatform": "5.1.0",
     "MvvmNano.Forms": "3.0.0",
     "MvvmNano.Ninject": "3.0.0",
+    "SQLite.Net-PCL": "3.1.1",
+    "SQLite.Net.Async-PCL": "3.1.1",
     "Xamarin.Forms": "2.3.3.180"
   },
   "frameworks": {

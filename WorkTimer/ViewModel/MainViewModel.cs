@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using MvvmNano;
 using WorkTimer.ExtensionMethods;
+using WorkTimer.Interface;
 using WorkTimer.Model;
 using Xamarin.Forms;
 
@@ -8,6 +12,8 @@ namespace WorkTimer.ViewModel
 {
     public class MainViewModel : MvvmNanoViewModel
     {
+        private readonly IWorkManager _workManager;
+
         #region dic
 
         private const string NO_DATA = "-";
@@ -16,7 +22,7 @@ namespace WorkTimer.ViewModel
 
         private bool _isInBreak;
 
-        public WorkDay TodaysWorkDay { get; set; }
+        private WorkDay _todaysWorkDay;  
 
         public bool IsTodaysWorkDone { get; set; }
 
@@ -38,13 +44,50 @@ namespace WorkTimer.ViewModel
         public string TotalBreakTimeFormatted => GetTotalBreakTimeFormatted();
 
         //Commands
-        public MvvmNanoCommand StartWorkCommand => new MvvmNanoCommand(StartWork);
+        public MvvmNanoCommand StartWorkCommand => new MvvmNanoCommand(async ()=> await StartWork());
 
-        public MvvmNanoCommand EndWorkCommand => new MvvmNanoCommand(EndWork);
+        public MvvmNanoCommand EndWorkCommand => new MvvmNanoCommand(async () => await EndWork());
 
-        public MainViewModel()
+        public MainViewModel(IWorkManager workManager)
         {
+            _workManager = workManager;
+
+            _workManager.DayUpdatedEvent += DayUpdated;
+
+            Task.Run(async()=>
+            {
+                await MvvmNanoIoC.Resolve<IDataService>().Initialize();
+                var workDay = await _workManager.GetDay(DateTimeOffset.Now.Date);
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    TodaysWorkDay = workDay;
+                });
+            });
+
             Device.StartTimer(TimeSpan.FromMilliseconds(250), TimerTick);
+        }
+
+        private void DayUpdated(object sender, WorkDay workDay)
+        {
+            if (!workDay.Date.IsSameDay(DateTimeOffset.Now)) return;
+
+            Debug.WriteLine("Todays WorkDay updated.");
+            
+        }
+
+        public WorkDay TodaysWorkDay
+        {
+            get { return _todaysWorkDay; }
+            set
+            {
+                _todaysWorkDay = value;
+                NotifyPropertyChanged(nameof(StartTimeFormatted));
+                NotifyPropertyChanged(nameof(EndTimeFormatted));
+                NotifyPropertyChanged(nameof(IsInBreak)); 
+                NotifyPropertyChanged(nameof(IsBreakPossible));
+
+                IsTodaysWorkDone = TodaysWorkDay.WorkEnded;
+            }
         }
 
         #region time infos
@@ -131,19 +174,18 @@ namespace WorkTimer.ViewModel
 
         #region work methods
 
-        private void StartWork()
+        private async Task StartWork()
         {
-            TodaysWorkDay = new WorkDay();
-            TodaysWorkDay.StartWork();
+            await _workManager.StartDay(TodaysWorkDay);
             NotifyPropertyChanged(nameof(StartTimeFormatted));
             NotifyPropertyChanged(nameof(CanStartWork));
             NotifyPropertyChanged(nameof(CanEndWork));
             NotifyPropertyChanged(nameof(IsBreakPossible));
         }
 
-        private void EndWork()
+        private async Task EndWork()
         {
-            TodaysWorkDay.EndWork();
+            await _workManager.EndDay(TodaysWorkDay);
             NotifyPropertyChanged(nameof(EndTimeFormatted));
             NotifyPropertyChanged(nameof(CanEndWork));
             NotifyPropertyChanged(nameof(IsBreakPossible)); 
@@ -181,24 +223,24 @@ namespace WorkTimer.ViewModel
             {
                 if (value && !TodaysWorkDay.IsInBreak()) //Was not in break, start break.
                 {
-                    StartBreak();
+                    Task.Run(async () => await StartBreak());
                 }
                 if (!value && TodaysWorkDay.IsInBreak()) //Was in break, end break.
                 {
-                    EndBreak();
+                    Task.Run(async () => await EndBreak());
                 } 
             }
         }
 
-        private void StartBreak()
+        private async Task StartBreak()
         {
-            TodaysWorkDay.StartBreak();
+            await _workManager.StartBreak(TodaysWorkDay);  
             NotifyPropertyChanged(nameof(IsInBreak));
         }
 
-        private void EndBreak()
+        private async Task EndBreak()
         {
-            TodaysWorkDay.EndBreak();
+            await _workManager.EndBreak(TodaysWorkDay);
             NotifyPropertyChanged(nameof(IsInBreak));
         }
     }
