@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,6 +19,9 @@ namespace WorkTimer.Implementation
         private SQLiteAsyncConnection _databaseConnection;
 
         public event EventHandler<WorkDay> DayUpdatedEvent;
+        public event EventHandler<WorkDay> DayAddedEvent;
+        public event EventHandler<WorkWeek> WeekAddedEvent;
+        public event EventHandler<WorkWeek> WeekUpdatedEvent;
 
         public DataService()
         {
@@ -25,7 +29,12 @@ namespace WorkTimer.Implementation
         }
 
         public async Task Initialize()
-        { 
+        {
+            await _databaseConnection.DeleteAllAsync<WorkWeek>();
+            await _databaseConnection.DeleteAllAsync<WorkDay>();
+            await _databaseConnection.DeleteAllAsync<Break>();
+
+
             await _databaseConnection.CreateTableAsync<Break>();
             await _databaseConnection.CreateTableAsync<WorkDay>(); 
             await _databaseConnection.CreateTableAsync<WorkWeek>(); 
@@ -34,26 +43,23 @@ namespace WorkTimer.Implementation
         public async Task<WorkDay> AddDay(WorkDay workDay)
         {  
             //Get the week, week has to be created bevore a day can get added.
-            WorkWeek workWeek = null;
-            try
-            {
-                workWeek = await GetWeek(workDay.Date);
-            }
-            catch (WeekDoesNotExistException exception)
-            {
-                throw exception;
-            }
+            WorkWeek workWeek; 
+
+            workWeek = await GetWeek(workDay.Date); 
 
             //Check if a day for this date already exists in the week.
             foreach (WorkDay day in workWeek.WorkDays)
             {
                 if (day.Date.IsSameDay(workDay.Date))
-                    throw new Exception($"Day for {day.Date.ToString("d")} does already exist.");
+                    throw new Exception($"Day for {day.Date:d} does already exist.");
             }
             workDay.Date = workDay.Date.AddHours(1); //Workaround for a bug that decreases the date for one hour
             workWeek.WorkDays.Add(workDay);
             await _databaseConnection.InsertAsync(workDay);
-            await _databaseConnection.UpdateAsync(workWeek);
+            await _databaseConnection.UpdateWithChildrenAsync(workWeek);
+
+            FireDayAddedEvent(workDay);
+            FireWeekUpdatedEvent(workWeek);
 
             return workDay;
         }
@@ -61,7 +67,17 @@ namespace WorkTimer.Implementation
         public async Task<WorkWeek> AddWeek(WorkWeek workWeek)
         {
             workWeek.FirstDateOfWeek = workWeek.FirstDateOfWeek.AddHours(1); //Workaround for a bug that decreases the date for one hour
-            await _databaseConnection.InsertAsync(workWeek); 
+            foreach (WorkDay workDay in workWeek.WorkDays)
+            {
+                workDay.Date = workDay.Date.AddHours(1); //Workaround for a bug that decreases the date for one hour
+            }
+
+            await _databaseConnection.InsertWithChildrenAsync(workWeek); 
+            FireWeekAddedEvent(workWeek);
+            foreach (WorkDay workDay in workWeek.WorkDays)
+            {
+                FireDayAddedEvent(workDay);
+            }
             return workWeek;
         }
 
@@ -89,10 +105,10 @@ namespace WorkTimer.Implementation
         {
             try
             {
-                var workDays = await _databaseConnection.GetAllWithChildrenAsync<WorkWeek>(); 
-                var workDay = workDays.First(o => o.FirstDateOfWeek.IsSameWeek(date));
-                await _databaseConnection.GetChildrenAsync(workDay);
-                return workDay;
+                var workWeeks = await _databaseConnection.GetAllWithChildrenAsync<WorkWeek>(); 
+                var workWeek = workWeeks.First(o => o.FirstDateOfWeek.IsSameWeek(date));
+                await _databaseConnection.GetChildrenAsync(workWeek);
+                return workWeek;
             }
             catch (SQLiteException sqLiteException)
             {
@@ -101,6 +117,7 @@ namespace WorkTimer.Implementation
             }
             catch (Exception exception)
             {
+                Debug.WriteLine(exception);
                 throw new WeekDoesNotExistException();
             }
         } 
@@ -110,7 +127,7 @@ namespace WorkTimer.Implementation
             if (workDay == null) throw new ArgumentNullException();
             workDay.StartWork();
             await _databaseConnection.UpdateAsync(workDay);
-            TriggerDayUpdatedEvent(workDay);
+            FireDayUpdatedEvent(workDay);
         }
 
         public async Task EndDay(WorkDay workDay)
@@ -118,7 +135,7 @@ namespace WorkTimer.Implementation
             if (workDay == null) throw new ArgumentNullException();
             workDay.EndWork();
             await _databaseConnection.UpdateAsync(workDay);
-            TriggerDayUpdatedEvent(workDay);
+            FireDayUpdatedEvent(workDay);
         }
 
         public async Task StartBreak(WorkDay workDay)
@@ -139,7 +156,7 @@ namespace WorkTimer.Implementation
             
             //newBreak.WorkDay = workDay;
             await _databaseConnection.UpdateWithChildrenAsync(workDay);
-            TriggerDayUpdatedEvent(workDay);
+            FireDayUpdatedEvent(workDay);
         }
 
         public async Task EndBreak(WorkDay workDay)
@@ -152,12 +169,50 @@ namespace WorkTimer.Implementation
 
             await _databaseConnection.UpdateWithChildrenAsync(workDay.LastBreak);
 
-            TriggerDayUpdatedEvent(workDay);
+            FireDayUpdatedEvent(workDay);
         }
 
-        private void TriggerDayUpdatedEvent(WorkDay workDay)
+        private void FireDayAddedEvent(WorkDay workDay)
         {
-            DayUpdatedEvent?.Invoke(this, workDay);
+            InvokeEventOnMainThread(DayAddedEvent, workDay);
+            Debug.WriteLine("Day: " + workDay.Date.ToString("d") + " added.");
         }
+
+        private void FireWeekAddedEvent(WorkWeek workWeek)
+        {
+            InvokeEventOnMainThread(WeekAddedEvent, workWeek);
+            Debug.WriteLine("Week: " + workWeek.FirstDateOfWeek.ToString("d") + " added.");
+        }
+
+        private void FireDayUpdatedEvent(WorkDay workDay)
+        {
+            InvokeEventOnMainThread(DayUpdatedEvent, workDay);
+            Debug.WriteLine("Day: " + workDay.Date.ToString("d") + " updated.");
+        }
+
+        private void FireWeekUpdatedEvent(WorkWeek workWeek)
+        {
+            InvokeEventOnMainThread(WeekUpdatedEvent, workWeek);
+            Debug.WriteLine("Week: " + workWeek.FirstDateOfWeek.ToString("d") + " updated.");
+        }
+
+        private void InvokeEventOnMainThread<TParameter>(EventHandler<TParameter> eventHandler, TParameter parameter)
+        {
+            Device.BeginInvokeOnMainThread(()=> eventHandler?.Invoke(this, parameter));
+        }
+
+        public async Task<List<WorkWeek>> GetAllWeeks()
+        {
+            try
+            {
+                var workWeeks = await _databaseConnection.GetAllWithChildrenAsync<WorkWeek>();
+                return workWeeks;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                return new List<WorkWeek>();
+            }
+        } 
     }
 }

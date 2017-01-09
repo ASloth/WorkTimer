@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using WorkTimer.Model;
 
@@ -13,6 +14,11 @@ namespace WorkTimer.Interface
         /// Will use the current user settings if a new week gets created.
         /// </summary>
         Task<WorkWeek> GetWeek(DateTimeOffset date);
+
+        /// <summary>
+        /// Returns all weeks from the database.
+        /// </summary> 
+        Task<List<WorkWeek>> GetAllWeeks();
 
         /// <summary>
         /// Returns the <see cref="WorkDay"/> object for the given date. Creates a new date and week if non exists in the database.

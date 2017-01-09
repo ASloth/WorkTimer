@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<forms:MvvmNanoContentPage x:TypeArguments="viewModel:WorkWeekDetailViewModel" xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:forms="clr-namespace:MvvmNano.Forms;assembly=MvvmNano.Forms"
+             xmlns:viewModel="clr-namespace:WorkTimer.ViewModel;assembly=WorkTimer"
+             x:Class="WorkTimer.Page.WorkWeekDetailPage"
+            Title="{Binding WorkWeek.WeekYearInfo}">
+    <ListView x:Name="WorkDaysListView"
+              ItemsSource="{Binding WorkWeek.WorkDays}"
+              SelectedItem="{Binding SelectedItem}"
+              ItemSelected="WorkDaySelected">
+        <ListView.ItemTemplate>
+            <DataTemplate>
+                <TextCell Text="{Binding Path=DayOfWeek}"/>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView> 
+</forms:MvvmNanoContentPage>

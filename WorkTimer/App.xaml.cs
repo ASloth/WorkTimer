@@ -52,8 +52,8 @@ namespace WorkTimer
 
         private static void SetUpDependencies()
         {
-            MvvmNanoIoC.Register<IDataService, DataService>();
-            MvvmNanoIoC.Register<IWorkManager, WorkManager>(); 
+            MvvmNanoIoC.RegisterAsSingleton<IDataService, DataService>();
+            MvvmNanoIoC.RegisterAsSingleton<IWorkManager, WorkManager>(); 
         }
 
         private async Task Setup()

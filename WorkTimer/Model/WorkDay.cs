@@ -45,6 +45,13 @@ namespace WorkTimer.Model
             Date = date.Date;
         }
 
+        #region formatted info
+
+        [Ignore]
+        public string DayOfWeek => Date.DayOfWeek.ToString();
+
+#endregion
+
         #region extensions
 
         [Ignore]
@@ -106,7 +113,7 @@ namespace WorkTimer.Model
 
         public void StartWork()
         {
-            Start = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(2));
+            Start = DateTimeOffset.Now;
         }
 
         public void EndWork()

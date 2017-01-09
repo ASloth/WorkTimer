@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using WorkTimer.Exceptions;
@@ -35,17 +36,17 @@ namespace WorkTimer.Implementation
                 var firstDayOfGivenWeek = date.GetFirstDayOfWeek();
 
                 //Week did not exist, create a new one.
-                workWeek = new WorkWeek(firstDayOfGivenWeek);
-
-                workWeek = await _dateService.AddWeek(workWeek);
+                workWeek = new WorkWeek(firstDayOfGivenWeek); 
 
                 //Add all default dates 
                 foreach (DayOfWeek dayOfWeek in _neededDays)
                 {
                     var workDayDate = firstDayOfGivenWeek.AddDays((int)dayOfWeek - 1);
-                    var workDay = new WorkDay(workDayDate);
-                    await _dateService.AddDay(workDay);
+                    var workDay = new WorkDay(workDayDate); 
+                    workWeek.WorkDays.Add(workDay);
                 }
+
+                workWeek = await _dateService.AddWeek(workWeek);
             }
 
             return workWeek;
@@ -109,6 +110,11 @@ namespace WorkTimer.Implementation
         private void FireDayUpdatedEvent(WorkDay workDay)
         {
             DayUpdatedEvent?.Invoke(this, workDay);
+        }
+
+        public Task<List<WorkWeek>> GetAllWeeks()
+        {
+            return _dateService.GetAllWeeks();
         }
     }
 }

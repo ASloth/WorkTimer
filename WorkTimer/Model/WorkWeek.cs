@@ -1,5 +1,6 @@
 ﻿using System; 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using SQLite.Net.Attributes;
 using SQLiteNetExtensions.Attributes;
@@ -13,7 +14,7 @@ namespace WorkTimer.Model
 
         #region Relations
 
-        [OneToMany]
+        [OneToMany(CascadeOperations = CascadeOperation.CascadeInsert)]
         public List<WorkDay> WorkDays { get; set; } = new List<WorkDay>();
 
         #endregion 
@@ -26,6 +27,26 @@ namespace WorkTimer.Model
         {
             FirstDateOfWeek = firstDateOfWeek.Date;
         }
+
+        #region formatted informations
+
+        [Ignore]
+        public string WeekYearInfo
+        {
+            get
+            {
+                DateTimeFormatInfo dfi = DateTimeFormatInfo.CurrentInfo;
+                Calendar cal = dfi.Calendar;
+                var calenderWeek = cal.GetWeekOfYear(FirstDateOfWeek.DateTime, CalendarWeekRule.FirstDay, DayOfWeek.Monday);
+
+                return $"Woche {calenderWeek}, {FirstDateOfWeek.Year}";
+            }
+        }
+
+        [Ignore]
+        public string WorkedHourInfo => $"{TotalWorkedTime.ToString("hh\\:mm\\:ss")} gearbeitet, {TotalBreakTime.ToString("hh\\:mm\\:ss")} Pause insgesamt.";
+
+        #endregion
 
         #region WorkDay summorizing
 

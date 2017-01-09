@@ -56,12 +56,20 @@ namespace WorkTimer.ViewModel
 
             Task.Run(async()=>
             {
-                await MvvmNanoIoC.Resolve<IDataService>().Initialize();
-                var workDay = await _workManager.GetDay(DateTimeOffset.Now.Date);
-                Device.BeginInvokeOnMainThread(() =>
+                try
                 {
-                    TodaysWorkDay = workDay;
-                });
+                    await MvvmNanoIoC.Resolve<IDataService>().Initialize();
+                    var workDay = await _workManager.GetDay(DateTimeOffset.Now.Date);
+                    Device.BeginInvokeOnMainThread(() =>
+                    {
+                        TodaysWorkDay = workDay;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    
+                }
+                
             });
 
             Device.StartTimer(TimeSpan.FromMilliseconds(250), TimerTick);

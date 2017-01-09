@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using WorkTimer.Model;
 
@@ -8,7 +9,13 @@ namespace WorkTimer.Interface
     {
         Task Initialize();
 
-        event EventHandler<WorkDay> DayUpdatedEvent; 
+        event EventHandler<WorkDay> DayAddedEvent;
+
+        event EventHandler<WorkWeek> WeekAddedEvent;
+
+        event EventHandler<WorkDay> DayUpdatedEvent;
+
+        event EventHandler<WorkWeek> WeekUpdatedEvent;
 
         Task<WorkDay> AddDay(WorkDay workDay);
 
@@ -25,5 +32,7 @@ namespace WorkTimer.Interface
         Task StartBreak(WorkDay day);
 
         Task EndBreak(WorkDay day);
+
+        Task<List<WorkWeek>> GetAllWeeks();
     }
 }
