@@ -30,10 +30,9 @@ namespace WorkTimer.Implementation
 
         public async Task Initialize()
         {
-            await _databaseConnection.DeleteAllAsync<WorkWeek>();
-            await _databaseConnection.DeleteAllAsync<WorkDay>();
-            await _databaseConnection.DeleteAllAsync<Break>();
-
+            //await _databaseConnection.DeleteAllAsync<WorkWeek>();
+            //await _databaseConnection.DeleteAllAsync<WorkDay>();
+            //await _databaseConnection.DeleteAllAsync<Break>();
 
             await _databaseConnection.CreateTableAsync<Break>();
             await _databaseConnection.CreateTableAsync<WorkDay>(); 

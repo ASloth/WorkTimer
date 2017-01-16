@@ -72,6 +72,7 @@
     <Compile Include="ViewModel\MainTabbedViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\WorkDayDetailViewModel.cs" />
+    <Compile Include="ViewModel\WorkDayDetailViewModelBase.cs" />
     <Compile Include="ViewModel\WorkWeekDetailViewModel.cs" />
   </ItemGroup>
   <ItemGroup>

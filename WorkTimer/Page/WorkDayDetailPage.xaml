@@ -5,4 +5,59 @@
              xmlns:viewModel="clr-namespace:WorkTimer.ViewModel;assembly=WorkTimer"
              x:Class="WorkTimer.Page.WorkDayDetailPage"
              Title="{Binding Title}">
+    <forms:MvvmNanoContentPage.Resources>
+        <ResourceDictionary>
+            <Style TargetType="StackLayout">
+                <Setter Property="VerticalOptions" Value="Center"/>
+                <Setter Property="Margin" Value="10, 0"/>
+                <Setter Property="Orientation" Value="Horizontal"/>
+            </Style>
+        </ResourceDictionary>
+    </forms:MvvmNanoContentPage.Resources>
+    <forms:MvvmNanoContentPage.Content>
+        <StackLayout VerticalOptions="StartAndExpand" Orientation="Vertical" Margin="0, 5">
+            <TableView Intent="Data">
+                <TableRoot>
+                    <TableSection Title="Heutige zusammenfassung">
+                        <ViewCell >
+                            <StackLayout>
+                                <Label Text="Startzeit" FontAttributes="Bold"  />
+                                <Label Text="{Binding Path=StartTimeFormatted}" HorizontalOptions="EndAndExpand"/>
+                            </StackLayout>
+                        </ViewCell>
+                        <ViewCell>
+                            <StackLayout>
+                                <Label Text="Endzeit" FontAttributes="Bold"  />
+                                <Label Text="{Binding Path=EndTimeFormatted}" HorizontalOptions="EndAndExpand"/>
+                            </StackLayout>
+                        </ViewCell>
+                        <ViewCell >
+                            <StackLayout>
+                                <Label Text="Heute gearbeitet" FontAttributes="Bold" />
+                                <Label Text="{Binding Path=TodayWorkedFormatted}" HorizontalOptions="EndAndExpand"/>
+                            </StackLayout>
+                        </ViewCell>
+                        <ViewCell>
+                            <StackLayout>
+                                <Label Text="Noch zu arbeiten" FontAttributes="Bold" />
+                                <Label Text="{Binding Path=WorkLeftFormatted}" HorizontalOptions="EndAndExpand"/>
+                            </StackLayout>
+                        </ViewCell>
+                        <ViewCell>
+                            <StackLayout>
+                                <Label Text="Pause" FontAttributes="Bold" />
+                                <Button Command="{Binding AddBreak}" Text="Neu" HorizontalOptions="EndAndExpand" />
+                            </StackLayout>
+                        </ViewCell>
+                        <ViewCell>
+                            <StackLayout>
+                                <Label Text="Gesamtpause" FontAttributes="Bold" />
+                                <Label Text="{Binding Path=TotalBreakTimeFormatted}" HorizontalOptions="EndAndExpand" />
+                            </StackLayout>
+                        </ViewCell>
+                    </TableSection>
+                </TableRoot>
+            </TableView>
+        </StackLayout>
+    </forms:MvvmNanoContentPage.Content>
 </forms:MvvmNanoContentPage>

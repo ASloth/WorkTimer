@@ -10,51 +10,18 @@ using Xamarin.Forms;
 
 namespace WorkTimer.ViewModel
 {
-    public class MainViewModel : MvvmNanoViewModel
-    {
-        private readonly IWorkManager _workManager;
-
-        #region dic
-
-        private const string NO_DATA = "-";
-
-        #endregion
-
-        private bool _isInBreak;
-
-        private WorkDay _todaysWorkDay;  
-
-        public bool IsTodaysWorkDone { get; set; }
-
-        public bool IsBreakPossible => GetIsBreakPossible();
-
-        public bool CanStartWork => GetCanStartWork(); 
-
-        public bool CanEndWork => GetCanEndWork(); 
-
-        //Formatted infos 
-        public string StartTimeFormatted => GetStartTimeFormatted();
-
-        public string EndTimeFormatted => GetEndTimeFormatted();
-
-        public string TodayWorkedFormatted => GetTodayWorkedFormatted();
-
-        public string WorkLeftFormatted => GetWorkLeftFormatted();
-
-        public string TotalBreakTimeFormatted => GetTotalBreakTimeFormatted();
+    public class MainViewModel : WorkDayDetailViewModelBase<WorkDay>
+    { 
+        public bool CanEndWork => GetCanEndWork();  
 
         //Commands
         public MvvmNanoCommand StartWorkCommand => new MvvmNanoCommand(async ()=> await StartWork());
 
         public MvvmNanoCommand EndWorkCommand => new MvvmNanoCommand(async () => await EndWork());
 
-        public MainViewModel(IWorkManager workManager)
+        public MainViewModel(IWorkManager workManager) : base(workManager)
         {
-            _workManager = workManager;
-
-            _workManager.DayUpdatedEvent += DayUpdated;
-
-            Task.Run(async()=>
+            Task.Run(async () =>
             {
                 try
                 {
@@ -62,123 +29,15 @@ namespace WorkTimer.ViewModel
                     var workDay = await _workManager.GetDay(DateTimeOffset.Now.Date);
                     Device.BeginInvokeOnMainThread(() =>
                     {
-                        TodaysWorkDay = workDay;
+                        SetDay(workDay);
                     });
                 }
                 catch (Exception ex)
                 {
-                    
+                    Debug.WriteLine(ex);
                 }
-                
-            });
-
-            Device.StartTimer(TimeSpan.FromMilliseconds(250), TimerTick);
-        }
-
-        private void DayUpdated(object sender, WorkDay workDay)
-        {
-            if (!workDay.Date.IsSameDay(DateTimeOffset.Now)) return;
-
-            Debug.WriteLine("Todays WorkDay updated.");
-            
-        }
-
-        public WorkDay TodaysWorkDay
-        {
-            get { return _todaysWorkDay; }
-            set
-            {
-                _todaysWorkDay = value;
-                NotifyPropertyChanged(nameof(StartTimeFormatted));
-                NotifyPropertyChanged(nameof(EndTimeFormatted));
-                NotifyPropertyChanged(nameof(IsInBreak)); 
-                NotifyPropertyChanged(nameof(IsBreakPossible));
-
-                IsTodaysWorkDone = TodaysWorkDay.WorkEnded;
-            }
-        }
-
-        #region time infos
-
-        private bool TimerTick()
-        {
-            if (TodaysWorkDay != null)
-            {
-                NotifyPropertyChanged(nameof(TodayWorkedFormatted));
-                NotifyPropertyChanged(nameof(WorkLeftFormatted));
-                NotifyPropertyChanged(nameof(TotalBreakTimeFormatted));
-            }
-            return true;
-        }
-
-        private string GetStartTimeFormatted()
-        {
-            if (TodaysWorkDay == null) return NO_DATA;
-
-            if (!TodaysWorkDay.WorkStarted) return NO_DATA;
-
-            return TodaysWorkDay.Start.ToString("HH:mm");
-        }
-
-        private string GetEndTimeFormatted()
-        {
-            if (TodaysWorkDay == null) return NO_DATA;
-
-            if (!TodaysWorkDay.WorkEnded) return NO_DATA;
-
-            return TodaysWorkDay.End.ToString("HH:mm");
-        }
-
-        private string GetTodayWorkedFormatted()
-        {
-            if (TodaysWorkDay == null) return NO_DATA;
-
-            if (!TodaysWorkDay.WorkStarted) return NO_DATA;
-
-            return TodaysWorkDay.WorkedTime.ToString("hh\\:mm\\:ss");
-        }
-
-        private string GetWorkLeftFormatted()
-        {
-            if (TodaysWorkDay == null) return NO_DATA;
-
-            if (!TodaysWorkDay.WorkStarted) return NO_DATA;
-
-            var workDueToday = TimeSpan.FromHours(8);
-
-            TimeSpan workLeft;
-
-            if (workDueToday > TodaysWorkDay.WorkedTime)
-            {
-                workLeft = workDueToday - TodaysWorkDay.WorkedTime;
-                IsTodaysWorkDone = false;
-            }
-            else
-            {
-                workLeft = TodaysWorkDay.WorkedTime - workDueToday;
-                IsTodaysWorkDone = true;
-            }
-
-            var formattedTime = workLeft.ToString("hh\\:mm\\:ss");
-
-            if (IsTodaysWorkDone) formattedTime = "- " + formattedTime;
-
-            return formattedTime;
-        }
-
-        private string GetTotalBreakTimeFormatted()
-        {
-            if (TodaysWorkDay == null) return NO_DATA;
-
-            var total = TodaysWorkDay.TotalBreakTime;
-
-            if (total.Ticks == 0)
-                return NO_DATA;
-            else
-                return total.ToString("hh\\:mm\\:ss");
-        }
-
-        #endregion
+            });  
+        }  
 
         #region work methods
 
@@ -197,46 +56,25 @@ namespace WorkTimer.ViewModel
             NotifyPropertyChanged(nameof(EndTimeFormatted));
             NotifyPropertyChanged(nameof(CanEndWork));
             NotifyPropertyChanged(nameof(IsBreakPossible)); 
-        }
-
-        private bool GetCanStartWork()
-        {
-            return TodaysWorkDay == null || TodaysWorkDay.Start.IsNull();
-        }
+        } 
 
         private bool GetCanEndWork()
         {
             return TodaysWorkDay != null && !TodaysWorkDay.Start.IsNull();
         }
 
-        #endregion
+        #endregion  
 
-        private bool GetIsBreakPossible()
+        protected override void BreakStateChanged(bool inBreak)
         {
-            return TodaysWorkDay != null && !TodaysWorkDay.Start.IsNull() && TodaysWorkDay.End.IsNull();
-        }
-
-        public bool IsInBreak
-        {
-            get
+            base.BreakStateChanged(inBreak);
+            if (inBreak && !TodaysWorkDay.IsInBreak()) //Was not in break, start break.
             {
-                bool result = false;
-
-                if (TodaysWorkDay != null) 
-                    result = TodaysWorkDay.IsInBreak();
-
-                return result;
+                Task.Run(async () => await StartBreak());
             }
-            set
+            if (!inBreak && TodaysWorkDay.IsInBreak()) //Was in break, end break.
             {
-                if (value && !TodaysWorkDay.IsInBreak()) //Was not in break, start break.
-                {
-                    Task.Run(async () => await StartBreak());
-                }
-                if (!value && TodaysWorkDay.IsInBreak()) //Was in break, end break.
-                {
-                    Task.Run(async () => await EndBreak());
-                } 
+                Task.Run(async () => await EndBreak());
             }
         }
 
