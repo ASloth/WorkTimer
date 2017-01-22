@@ -6,6 +6,7 @@ using MvvmNano.Forms;
 using MvvmNano.Ninject;
 using Plugin.Geolocator;
 using Plugin.Geolocator.Abstractions;
+using Plugin.LocalNotifications;
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
 using Plugin.Vibrate;
@@ -58,6 +59,7 @@ namespace WorkTimer
 
         private static void SetUpDependencies()
         {
+            MvvmNanoIoC.RegisterAsSingleton(CrossLocalNotifications.Current);
             MvvmNanoIoC.RegisterAsSingleton(CrossVibrate.Current);
             MvvmNanoIoC.RegisterAsSingleton(CrossPermissions.Current);
             MvvmNanoIoC.RegisterAsSingleton(CrossGeolocator.Current);

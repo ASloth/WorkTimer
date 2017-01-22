@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using MvvmNano;
 using Plugin.Geolocator.Abstractions;
+using Plugin.LocalNotifications.Abstractions;
 using Plugin.Permissions.Abstractions;
 using Plugin.Vibrate.Abstractions;
 using WorkTimer.Interface;
@@ -16,16 +17,19 @@ namespace WorkTimer.Implementation
         private readonly IWorkManager _workManager;
         private readonly ISettingStorage _settingStorage;
         private readonly IVibrate _vibrate;
+        private readonly ILocalNotifications _localNotifications;
 
         private DateTimeOffset _lastReminder = DateTime.Today;
 
-        public LocationService(IPermissions permissions, IGeolocator geolocator, IWorkManager workManager, ISettingStorage settingStorage, IVibrate vibrate)
+        public LocationService(IPermissions permissions, IGeolocator geolocator, IWorkManager workManager, ISettingStorage settingStorage, IVibrate vibrate,
+            ILocalNotifications localNotifications)
         {
             _permissions = permissions;
             _geolocator = geolocator;
             _workManager = workManager;
             _settingStorage = settingStorage;
             _vibrate = vibrate;
+            _localNotifications = localNotifications;
         }
 
         public async Task StartService()
@@ -96,6 +100,7 @@ namespace WorkTimer.Implementation
 
             _lastReminder = DateTimeOffset.Now;
             _vibrate.Vibration();
+            _localNotifications.Show("Arbeit beginnen", "Du hast deinen Arbeitsplatz betreten."); //TODO Remove when leaving workplace or starting timer
             //TODO add graphical information 
         }
 
@@ -105,6 +110,7 @@ namespace WorkTimer.Implementation
 
             _lastReminder = DateTimeOffset.Now;
             _vibrate.Vibration();
+            _localNotifications.Show("Arbeit beenden", "Du hast deinen Arbeitsplatz verlassen."); //TODO Remove when entering workplace or stopping timer
             //TODO add graphical information
         } 
     }
