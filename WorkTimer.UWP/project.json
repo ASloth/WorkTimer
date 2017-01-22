@@ -3,8 +3,11 @@
     "Microsoft.NETCore.UniversalWindowsPlatform": "5.1.0",
     "MvvmNano.Forms": "3.0.0",
     "MvvmNano.Ninject": "3.0.0",
+    "Plugin.Permissions": "1.2.1",
     "SQLite.Net-PCL": "3.1.1",
     "SQLite.Net.Async-PCL": "3.1.1",
+    "Xam.Plugin.Geolocator": "3.0.4",
+    "Xam.Plugins.Vibrate": "2.0.0",
     "Xamarin.Forms": "2.3.3.180"
   },
   "frameworks": {

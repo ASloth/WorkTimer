@@ -116,5 +116,12 @@ namespace WorkTimer.Implementation
         {
             return _dateService.GetAllWeeks();
         }
+
+        public async Task<bool> DayStarted()
+        {
+            var currentDay = await GetDay(DateTimeOffset.Now);
+
+            return currentDay.WorkStarted;
+        }
     }
 }

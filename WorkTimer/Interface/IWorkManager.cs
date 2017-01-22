@@ -45,5 +45,10 @@ namespace WorkTimer.Interface
         /// Ends the last break for the given date und updates the database.
         /// </summary> 
         Task EndBreak(WorkDay workDay);
+
+        /// <summary>
+        /// Checks wether or not the worktimer for the current day is running.
+        /// </summary> 
+        Task<bool> DayStarted();
     }
 }

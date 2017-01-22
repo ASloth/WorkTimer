@@ -1,8 +1,14 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using MvvmNano;
 using MvvmNano.Forms;
 using MvvmNano.Ninject;
+using Plugin.Geolocator;
+using Plugin.Geolocator.Abstractions;
+using Plugin.Permissions;
+using Plugin.Permissions.Abstractions;
+using Plugin.Vibrate;
 using WorkTimer.Implementation;
 using WorkTimer.Interface;
 using WorkTimer.Page;
@@ -47,19 +53,31 @@ namespace WorkTimer
 
             MainPage = new MvvmNanoNavigationPage(GetTabbedPageFor<MainTabbedViewModel>());
 
-            //Task.Run(async () => await Setup());
+            Task.Run(async () => await Setup());
         }
 
         private static void SetUpDependencies()
         {
+            MvvmNanoIoC.RegisterAsSingleton(CrossVibrate.Current);
+            MvvmNanoIoC.RegisterAsSingleton(CrossPermissions.Current);
+            MvvmNanoIoC.RegisterAsSingleton(CrossGeolocator.Current);
+            MvvmNanoIoC.RegisterAsSingleton<ISettingStorage, SettingStorage>();
             MvvmNanoIoC.RegisterAsSingleton<IDataService, DataService>();
             MvvmNanoIoC.RegisterAsSingleton<IWorkManager, WorkManager>(); 
+            MvvmNanoIoC.RegisterAsSingleton<ILocationService, LocationService>();
         }
 
         private async Task Setup()
         {
-            //await MvvmNanoIoC.Resolve<IDataService>().Initialize(); 
-        }
+            try
+            {
+                await MvvmNanoIoC.Resolve<ILocationService>().StartService();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            } 
+        } 
 
         protected override void OnSleep()
         {
