@@ -66,6 +66,9 @@
     <Compile Include="Page\MainTabbedPage.xaml.cs">
       <DependentUpon>MainTabbedPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Page\SettingsPage.xaml.cs">
+      <DependentUpon>SettingsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Page\WorkDayDetailPage.xaml.cs">
       <DependentUpon>WorkDayDetailPage.xaml</DependentUpon>
     </Compile>
@@ -76,6 +79,7 @@
     <Compile Include="ViewModel\HistoryViewModel.cs" />
     <Compile Include="ViewModel\MainTabbedViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
+    <Compile Include="ViewModel\SettingsViewModel.cs" />
     <Compile Include="ViewModel\WorkDayDetailViewModel.cs" />
     <Compile Include="ViewModel\WorkDayDetailViewModelBase.cs" />
     <Compile Include="ViewModel\WorkWeekDetailViewModel.cs" />
@@ -177,6 +181,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Page\WorkDayDetailPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Page\SettingsPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>

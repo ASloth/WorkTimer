@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<forms:MvvmNanoContentPage x:TypeArguments="viewModel:SettingsViewModel" xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:forms="clr-namespace:MvvmNano.Forms;assembly=MvvmNano.Forms"
+             xmlns:viewModel="clr-namespace:WorkTimer.ViewModel;assembly=WorkTimer"
+             x:Class="WorkTimer.Page.SettingsPage"
+             Title="Settings">
+    <forms:MvvmNanoContentPage.Resources>
+        <ResourceDictionary>
+            <Style TargetType="StackLayout">
+                <Setter Property="Margin" Value="10, 0"/>
+                <Setter Property="Orientation" Value="Horizontal" />
+            </Style>
+            <Style TargetType="Grid"> 
+                <Setter Property="Margin" Value="10, 0"/> 
+                <Setter Property="ColumnSpacing" Value="0" />
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="VerticalOptions" Value="Center"/>
+                <Setter Property="Margin" Value="0" />
+            </Style>
+            <Style TargetType="Entry">
+                <Setter Property="VerticalOptions" Value="Center"/>
+                <Setter Property="Margin" Value="12, 0, 0, 0" />
+            </Style>
+            <Style TargetType="Slider">
+                <Setter Property="VerticalOptions" Value="Center"/>
+                <Setter Property="Margin" Value="0, 0" />
+            </Style>
+        </ResourceDictionary>
+    </forms:MvvmNanoContentPage.Resources>
+    <forms:MvvmNanoContentPage.Content>
+        <TableView Intent="Settings">
+            <TableRoot>
+                <TableSection Title="Arbeitsort">
+                    <ViewCell>
+                        <StackLayout>
+                            <Label Text="Ankunft erkennen" FontAttributes="Bold"  />
+                            <Switch IsToggled="{Binding CheckLocation}" HorizontalOptions="EndAndExpand"/>
+                        </StackLayout>
+                    </ViewCell>
+                    <ViewCell>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                             
+                            <Label Text="Breitengrad" FontAttributes="Bold"/>
+                            <Entry Text="{Binding Path=Latitude}" Keyboard="Numeric"  Grid.Column="1"/>
+
+                        </Grid>
+                    </ViewCell>
+                    <ViewCell>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Label Text="Längengrad" FontAttributes="Bold" />
+                            <Entry Text="{Binding Path=Longitude}" Grid.Column="1"/>
+                        </Grid>
+                    </ViewCell>
+                    <ViewCell>
+                        <StackLayout>
+                            <Label Text="Erinnerung wiederholen" FontAttributes="Bold"  />
+                            <Switch IsToggled="{Binding CanSnooze}" HorizontalOptions="EndAndExpand"/>
+                        </StackLayout>
+                    </ViewCell>
+                    <ViewCell>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.Children>
+                                <Label Text="Erinnerungsintervall" FontAttributes="Bold" />
+                                <Slider x:Name="Slider" 
+                                        Value="{Binding Path=SnoozeInterval}" 
+                                        Grid.Column="1"/>
+                                <Label Text="{Binding Path=SnoozeIntervalRoundFormatted, StringFormat='{0} Minuten'}" Grid.Column="2"/>
+                            </Grid.Children> 
+                        </Grid>
+                    </ViewCell> 
+                </TableSection> 
+            </TableRoot>
+        </TableView>
+    </forms:MvvmNanoContentPage.Content>
+</forms:MvvmNanoContentPage>

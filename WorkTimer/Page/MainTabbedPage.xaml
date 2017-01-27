@@ -5,7 +5,12 @@
     xmlns:forms="clr-namespace:MvvmNano.Forms;assembly=MvvmNano.Forms"
     xmlns:viewModel="clr-namespace:WorkTimer.ViewModel;assembly=WorkTimer" 
     xmlns:page="clr-namespace:WorkTimer.Page;assembly=WorkTimer"
-    Title="WorkTimer"> 
-  <page:MainPage/> 
-  <page:HistoryPage/>
+    Title="WorkTimer">
+    <forms:MvvmNanoTabbedPage.Children>
+        <page:MainPage/>
+        <page:HistoryPage/>
+    </forms:MvvmNanoTabbedPage.Children> 
+    <forms:MvvmNanoTabbedPage.ToolbarItems>
+        <ToolbarItem Command="{Binding OpenSettingsCommand}" Text="Einstellungen" ></ToolbarItem>
+    </forms:MvvmNanoTabbedPage.ToolbarItems>
 </forms:MvvmNanoTabbedPage>

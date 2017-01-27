@@ -12,5 +12,7 @@ namespace WorkTimer.Interface
         bool SnoozeAlerts { get; set; }
 
         TimeSpan AlertSnoozeTime { get; set; }
+
+        bool CheckLocation { get; set; }
     }
 }

@@ -12,6 +12,7 @@ namespace WorkTimer.Implementation
 
         public double Distance { get; set; } = 0.500;
         public bool SnoozeAlerts { get; set; } = true;
-        public TimeSpan AlertSnoozeTime { get; set; } = TimeSpan.FromSeconds(10);
+        public TimeSpan AlertSnoozeTime { get; set; } = TimeSpan.FromMinutes(5);
+        public bool CheckLocation { get; set; } = true;
     }
 }
